@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Omniglot Hover</title>
+		<link rel="stylesheet" href="./src/styles.css">
+		<style>
+			* {
+				padding: 0;
+				border: 0;
+			}
+			body {
+				color: #000000;
+				font: 100.01% sans-serif;
+				line-height: 1.45em;
+			}
+		</style>
+	</head>
+	<body>
+		<h2>Sample Text in Burmese</h2>
+		<p>
+			<img
+				src="img/udhr_myanmar.gif"
+				width="600"
+				height="153"
+				alt="လူတိုင်းသည် တူညီ လွတ်လပ်သော ဂုဏ်သိက္ခာဖြင့် လည်းကောင်း၊ တူညီလွတ်လပ်သော အခွင့်အရေးများဖြင့် လည်းကောင်း၊ မွေးဖွားလာသူများ ဖြစ်သည်။ ထိုသူတို့၌ ပိုင်းခြား ဝေဖန်တတ်သော ဉာဏ်နှင့် ကျင့်ဝတ် သိတတ်သော စိတ်တို့ရှိကြ၍ ထိုသူတို့သည် အချင်းချင်း မေတ္တာထား၍ ဆက်ဆံကျင့်သုံးသင့်၏။"
+				title="Sample text in Burmese (Article 1 of the Universal Declaration of Human Rights)"
+			/>
+		</p>
+
+		<h2>Overflow</h2>
+		<p>
+			<img
+				src="img/udhr_myanmar.gif"
+				width="600"
+				height="153"
+				alt="百&NewLine;&NewLine;&NewLine;科&NewLine;&NewLine;&NewLine;全&NewLine;&NewLine;&NewLine;书"
+				title="Sample text in Burmese (Article 1 of the Universal Declaration of Human Rights)"
+			/>
+		</p>
+
+		<h2>Short</h2>
+		<p>
+			<img
+				src="img/udhr_myanmar.gif"
+				width="600"
+				height="153"
+				alt="လူတိုင်းသည်"
+				title="Sample text in Burmese (Article 1 of the Universal Declaration of Human Rights)"
+			/>
+		</p>
+
+		<h2>Latin-text only</h2>
+		<p>
+			<img
+				src="img/udhr_myanmar.gif"
+				width="600"
+				height="153"
+				alt="hello world"
+				title="Sample text in Burmese (Article 1 of the Universal Declaration of Human Rights)"
+			/>
+		</p>
+	</body>
+	<script type="module" src="./src/script.mjs"></script>
+</html>

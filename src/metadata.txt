@@ -1,0 +1,11 @@
+// ==UserScript==
+// @name         Alt text to title
+// @namespace    https://github.com/lionel-rowe/
+// @version      0.1
+// @description  Alt text to title
+// @author       https://github.com/lionel-rowe/
+// @match        https://www.omniglot.com/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=omniglot.com
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==

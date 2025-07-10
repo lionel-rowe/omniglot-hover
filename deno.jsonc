@@ -1,0 +1,31 @@
+{
+	"lock": false,
+	"tasks": {
+		"watch": "deno run -RW --allow-run --watch scripts/watch.ts",
+		"fetch-img": "wget https://www.omniglot.com/images/langsamples/udhr_myanmar.gif -O img/udhr_myanmar.gif",
+		"dev": "deno run -RN jsr:@std/http/file-server"
+	},
+	"imports": {
+		"@std/path": "jsr:@std/path@^1.1.1",
+		"string-dedent": "npm:string-dedent@^3.0.2"
+	},
+	"fmt": {
+		"semiColons": false,
+		"useTabs": true,
+		"lineWidth": 120,
+		"indentWidth": 4,
+		"singleQuote": true,
+		"proseWrap": "preserve",
+		"exclude": ["README.md"]
+	},
+	"compilerOptions": { "strict": true },
+	"lint": {
+		"exclude": [],
+		"rules": {
+			"tags": ["recommended"],
+			"exclude": [],
+			"include": []
+		}
+	},
+	"exclude": []
+}

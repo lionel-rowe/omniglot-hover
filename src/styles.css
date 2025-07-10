@@ -1,0 +1,62 @@
+.omniglot-hover {
+	position: relative;
+	display: inline-block;
+	line-height: 0;
+}
+
+.omniglot-hover * {
+	box-sizing: border-box;
+}
+
+.omniglot-hover-overlay {
+	display: flex;
+	flex-direction: column-reverse;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	max-height: 100%;
+	overflow-y: auto;
+	white-space: pre-wrap;
+	transition: opacity 0.3s ease-in-out;
+	padding: 0.5rem;
+	font-size: 0.8rem;
+	background-color: #000c;
+	color: white;
+	line-height: 1.5;
+}
+
+.omniglot-hover:not(:hover) .omniglot-hover-overlay {
+	opacity: 0;
+}
+
+.omniglot-hover-overlay::-webkit-scrollbar {
+	width: 8px;
+}
+
+.omniglot-hover-overlay::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.5);
+	border-radius: 4px;
+}
+
+.omniglot-hover-text {
+	display: block;
+	width: 100%;
+}
+
+.omniglot-hover-copy-button {
+	float: right;
+	cursor: pointer;
+	border: none;
+	font-weight: bold;
+	background: #ccc;
+	color: black;
+	border-radius: 3px;
+	padding: 0.2rem;
+	transition: background 0.3s ease-in-out;
+	margin-left: 0.5rem;
+}
+
+.omniglot-hover-copy-button:hover {
+	background: #fff;
+}
