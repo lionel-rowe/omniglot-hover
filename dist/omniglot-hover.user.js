@@ -6,6 +6,8 @@
 // @author       https://github.com/lionel-rowe/
 // @match        https://www.omniglot.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=omniglot.com
+// @updateURL    https://github.com/lionel-rowe/omniglot-hover/raw/refs/heads/main/dist/omniglot-hover.user.js
+// @downloadURL  https://github.com/lionel-rowe/omniglot-hover/raw/refs/heads/main/dist/omniglot-hover.user.js
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
