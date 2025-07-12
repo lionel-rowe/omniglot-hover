@@ -92,22 +92,23 @@ Deno.test(isCandidate.name, async (t) => {
 Deno.test(isInteresting.name, async (t) => {
 	const tests: {
 		description: string
-		alt: string
+		text: string
 		expect: boolean
 	}[] = [
-		{ description: 'Empty alt text', alt: '', expect: false },
-		{ description: 'ASCII letters', alt: 'Hello, World！', expect: false },
-		{ description: 'Non-ASCII Latin text', alt: 'Khu Vườn Thực', expect: false },
-		{ description: 'Cyrillic text', alt: 'Привет, мир!', expect: true },
-		{ description: 'Chinese text', alt: '你好，世界！', expect: true },
-		{ description: 'Mixed', alt: 'Hello, 世界!', expect: true },
-		{ description: 'Punctuation', alt: '.?!,。？！、', expect: false },
-		{ description: 'Emoji', alt: '🦕', expect: false },
+		{ description: 'Empty alt text', text: '', expect: false },
+		{ description: 'ASCII letters', text: 'Hello, World！', expect: false },
+		{ description: 'Non-ASCII Latin text', text: 'Khu Vườn Thực', expect: false },
+		{ description: 'Cyrillic text', text: 'Привет, мир!', expect: true },
+		{ description: 'Chinese text', text: '你好，世界！', expect: true },
+		{ description: 'Mixed', text: 'Hello, 世界!', expect: true },
+		{ description: 'Punctuation', text: '.?!,。？！、', expect: false },
+		{ description: 'Emoji', text: '🦕', expect: false },
+		{ description: 'Private use', text: '', expect: true },
 	]
 
-	for (const { description, alt, expect } of tests) {
+	for (const { description, text, expect } of tests) {
 		await t.step(`${description}: ${expect}`, () => {
-			assertEquals(isInteresting(alt), expect)
+			assertEquals(isInteresting(text), expect)
 		})
 	}
 })

@@ -121,7 +121,9 @@ function isCandidate(img) {
  * @param {string} altText
  */
 function isInteresting(altText) {
-	const wordLike = /[\p{L}\p{M}\p{N}]+/gu
+	// assume private use characters are "word-like", since they are often used for con-scripts  (see e.g. sample text
+	// on https://www.omniglot.com/conscripts/klingon.htm)
+	const wordLike = /[\p{L}\p{M}\p{N}\p{Private_Use}]+/gu
 	const interesting = new RegExp(config.interesting, config.interesting.flags.replace('g', ''))
 	let match
 	while ((match = wordLike.exec(altText))) {
