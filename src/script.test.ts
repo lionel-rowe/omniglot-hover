@@ -1,4 +1,7 @@
 import { assertEquals } from '@std/assert'
+// @ts-types='@types/jsdom'
+import jsdom from 'jsdom'
+const { JSDOM } = jsdom
 
 // Normal export/import won't work as the script is not a module (can't currently use ESM in userscripts)
 const { config, isCandidate, isInteresting } = globalThis.eval(
@@ -9,11 +12,18 @@ const { config, isCandidate, isInteresting } = globalThis.eval(
 ) as import('./script.mjs').TestExports
 
 Deno.test(isCandidate.name, async (t) => {
+	const { window } = new JSDOM(`<!DOCTYPE html><html><body></body></html>`, {
+		url: 'https://www.omniglot.com/writing/burmese.htm',
+	})
+	const { document } = window
+
 	using stack = new DisposableStack()
 	const location = globalThis.location
-	globalThis.location = new URL('https://www.omniglot.com/writing/burmese.htm') as unknown as Location
+	globalThis.location = window.location
 	stack.defer(() => globalThis.location = location)
-	const getComputedStyle = globalThis.getComputedStyle
+	const getComputedStyle = window.getComputedStyle
+	globalThis.getComputedStyle = window.getComputedStyle
+	stack.defer(() => globalThis.getComputedStyle = getComputedStyle)
 
 	const w = config.minimumSize * 2
 	const h = config.minimumSize / 2
@@ -22,10 +32,6 @@ Deno.test(isCandidate.name, async (t) => {
 		width: `${w}px`,
 		height: `${h}px`,
 	}
-
-	// deno-lint-ignore no-explicit-any
-	globalThis.getComputedStyle = (el: any) => el._style ?? defaultStyles
-	stack.defer(() => globalThis.getComputedStyle = getComputedStyle)
 
 	const tests: {
 		description: string
@@ -78,12 +84,23 @@ Deno.test(isCandidate.name, async (t) => {
 
 	for (const { description, alt, link, expect, style } of tests) {
 		await t.step(`${description}: ${expect}`, () => {
-			const img = {
-				alt,
-				closest: () => link == null ? null : { href: link } as HTMLAnchorElement,
-				_style: style,
-			} as unknown as HTMLImageElement
+			const img = document.createElement('img')
+			img.alt = alt
 
+			for (const [key, value] of Object.entries(style ?? defaultStyles)) {
+				// @ts-ignore corresponding key/value type
+				img.style[key] = value
+			}
+
+			let el: HTMLElement = img
+			if (link) {
+				const a = document.createElement('a')
+				a.href = link
+				a.appendChild(img)
+				el = a
+			}
+
+			document.body.appendChild(el)
 			assertEquals(isCandidate(img), expect)
 		})
 	}
