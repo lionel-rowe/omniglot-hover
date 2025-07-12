@@ -114,7 +114,7 @@ function isCandidate(img) {
 	const { width, height } = getComputedStyle(img)
 
 	// skip images that are too small to usefully render an overlay
-	if (parseFloat(width) * parseFloat(height) < config.minimumSize ** 2) return false
+	if ((parseFloat(width) * parseFloat(height) || 0) < config.minimumSize ** 2) return false
 
 	return true
 }

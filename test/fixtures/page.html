@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Test Page</title>
+	</head>
+	<body>
+		<div>
+			<img
+				data-description="No alt text"
+				data-expect="false"
+				style="width: 500px; height: 200px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="Empty alt text"
+				data-expect="false"
+				alt=""
+				style="width: 500px; height: 200px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="Has alt text"
+				data-expect="true"
+				alt="Some text"
+				style="width: 500px; height: 200px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<a href="https://www.omniglot.com/internal.htm">
+				<img
+					data-description="Internal link with alt text"
+					data-expect="true"
+					alt="Some text"
+					style="width: 500px; height: 200px"
+					src="https://www.omniglot.com/image.jpg"
+				>
+			</a>
+		</div>
+		<div>
+			<a href="https://example.com/external.htm">
+				<img
+					data-description="External link with alt text"
+					data-expect="false"
+					alt="Some text"
+					style="width: 500px; height: 200px"
+					src="https://www.omniglot.com/image.jpg"
+				>
+			</a>
+		</div>
+		<div>
+			<img
+				data-description="minimum dimensions (square)"
+				data-expect="true"
+				alt="Some text"
+				style="width: 150px; height: 150px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="minimum dimensions (long)"
+				data-expect="true"
+				alt="Some text"
+				style="width: 300px; height: 75px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="minimum dimensions (tall)"
+				data-expect="true"
+				alt="Some text"
+				style="width: 75px; height: 300px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+
+		<div>
+			<img
+				data-description="square too small"
+				data-expect="false"
+				alt="Some text"
+				style="width: 149.9px; height: 149.9px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="width too small"
+				data-expect="false"
+				alt="Some text"
+				style="width: 299.9px; height: 75px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="height too small"
+				data-expect="false"
+				alt="Some text"
+				style="width: 300px; height: 74.9px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+		</div>
+		<div>
+			<img
+				data-description="NaN-like dimensions"
+				data-expect="false"
+				alt="Some text"
+			>
+		</div>
+	</body>
+</html>
