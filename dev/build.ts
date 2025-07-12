@@ -1,13 +1,7 @@
 import dedent from 'string-dedent'
 import { fromFileUrl, relative } from '@std/path'
 
-await build()
-
-for await (const event of Deno.watchFs('./src')) {
-	if (event.kind === 'modify') await build()
-}
-
-async function build() {
+export async function build() {
 	console.info('Rebuilding user script...')
 
 	const [metadata, script, styles] = await Promise.all([
@@ -23,10 +17,9 @@ async function build() {
 
 		${script.trim()}
 		
-		void (document.documentElement ?? document.head).insertAdjacentHTML(
-			'beforeend',
-			${JSON.stringify(`<style>${styles.trim()}</style>`)},
-		)\n
+		const style = document.createElement('style')
+		void (document.head ?? document.documentElement).append(style)
+		style.textContent = ${JSON.stringify(styles.trim())}
 	`
 
 	await Deno.writeTextFile('./dist/omniglot-hover.user.js', userScript)

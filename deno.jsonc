@@ -1,12 +1,16 @@
 {
 	"lock": false,
 	"tasks": {
-		"watch": "deno run -RW --allow-run --watch scripts/watch.ts",
-		"fetch-img": "wget https://www.omniglot.com/images/langsamples/udhr_myanmar.gif -O img/udhr_myanmar.gif",
-		"dev": "deno run -RN jsr:@std/http/file-server"
+		"dev": "deno run -RNW --allow-run --watch ./dev/server.ts",
+		"test": "deno test -R",
+		"fetch-img": "wget https://www.omniglot.com/images/langsamples/udhr_myanmar.gif -O img/udhr_myanmar.gif"
 	},
 	"imports": {
+		"@std/assert": "jsr:@std/assert@^1.0.13",
+		"@std/async": "jsr:@std/async@^1.0.13",
+		"@std/http": "jsr:@std/http@^1.0.19",
 		"@std/path": "jsr:@std/path@^1.1.1",
+		"@std/testing": "jsr:@std/testing@^1.0.14",
 		"string-dedent": "npm:string-dedent@^3.0.2"
 	},
 	"fmt": {

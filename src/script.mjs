@@ -2,85 +2,135 @@
 /// <reference lib="DOM" />
 /// <reference lib="DOM.iterable" />
 
-/** @type {WeakSet<HTMLImageElement>} */
+const config = /** @type {const} */ ({
+	/** CSS selector of the top parent element within which to render overlays */
+	parent: '#body',
+	/** Minimum size of an image to add an overlay (as equivalent area of a square with side length N pixels) */
+	minimumSize: 150,
+	/** Regular expression to match "interesting" word-like characters in alt text for purpose of adding copy button */
+	interesting: /[^\d\p{scx=Latn}]/u,
+})
+
+/**
+ * Used to track which images have been processed, to avoid processing the same image multiple times.
+ * @type {WeakSet<HTMLImageElement>}
+ */
 const seen = new WeakSet()
 
-function addAllOverlays() {
-	const imgs = /** @type {NodeListOf<HTMLImageElement>} */ (document.querySelectorAll('img[alt]'))
+// only run if `document` is available to prevent errors in testing environment
+// eslint-disable-next-line no-undef
+if (typeof globalThis.document === 'object') start()
+
+function start() {
+	const observer = new MutationObserver(queueAllOverlays)
+	observer.observe(document.documentElement, { subtree: true, childList: true })
+	queueAllOverlays([], observer)
+}
+
+/** @type {MutationCallback} */
+function queueAllOverlays(_, observer) {
+	if (document.readyState !== 'loading') observer.disconnect()
+
+	const imgs = /** @type {Iterable<HTMLImageElement>} */ (document.querySelectorAll(`${config.parent} img[alt]`))
 	for (const img of imgs) {
 		if (seen.has(img)) continue
-		addOverlay(img)
+		seen.add(img)
+		queueOverlay(img)
 	}
 }
 
 /**
- * Match any non-Latin word-like character, on the assumption that any image with matching alt text is likely to be
- * "interesting" for the purposes of copiable text, e.g. a language sample.
- * @param {string} alt
+ * Queue an image for overlay processing when it loads, or immediately if it has already loaded.
+ * @param img {HTMLImageElement}
  */
-function isInteresting(alt) {
-	return /[\p{L}\p{M}\p{N}]/u.test(alt.replaceAll(/[\w\p{scx=Latn}]/gu, ''))
+function queueOverlay(img) {
+	if (img.complete) addOverlay.call(img)
+	else img.addEventListener('load', addOverlay, { once: true })
 }
 
-/** @param img {HTMLImageElement} */
-function addOverlay(img) {
-	seen.add(img)
+/**
+ * Add an overlay to an image
+ * @this {HTMLImageElement} img - must be an image that has finished loading, to ensure computed styles etc. are correct
+ */
+function addOverlay() {
+	if (!isCandidate(this)) return
 
-	const { alt } = img
+	const { alt } = this
 
-	const parent = document.createElement('span')
-	parent.className = 'omniglot-hover'
-	img.replaceWith(parent)
+	const wrapper = document.createElement('span')
+	const className = 'omniglot-hover'
+	wrapper.className = className
+	this.replaceWith(wrapper)
 
 	const overlay = document.createElement('div')
-	overlay.className = 'omniglot-hover-overlay'
+	overlay.className = `${className}__overlay`
 
 	const text = document.createElement('div')
-	text.className = 'omniglot-hover-text'
+	text.className = `${className}__text`
 	text.textContent = alt
 
 	if (isInteresting(alt)) {
 		const copyButton = document.createElement('button')
-		copyButton.className = 'omniglot-hover-copy-button'
+		copyButton.className = `${className}__copy-button`
 		copyButton.textContent = 'Copy'
-		copyButton.addEventListener('click', () => {
-			navigator.clipboard.writeText(alt)
+		copyButton.addEventListener('click', async () => {
+			await navigator.clipboard.writeText(alt)
 			copyButton.textContent = 'Copied!'
-			setTimeout(() => {
-				copyButton.textContent = 'Copy'
-			}, 2000)
+			await new Promise((res) => setTimeout(res, 2000))
+			copyButton.textContent = 'Copy'
 		})
 		text.append(copyButton)
 	}
 
 	overlay.append(text)
-	parent.append(img, overlay)
+	wrapper.append(this, overlay)
+
+	// re-apply `float` style to avoid messing with layout
+	const { float } = getComputedStyle(this)
+	console.log(float)
+	if (float !== 'none') wrapper.style.float = float
 }
 
-const getObservableElements = () => [
-	document.documentElement,
-	document.body,
-]
+/**
+ * Check if the image is a candidate for adding an overlay.
+ * @param {HTMLImageElement} img
+ */
+function isCandidate(img) {
+	if (!img.alt) return false
 
-/** @type {MutationObserver} */
-let observer
-observe()
-
-function observe() {
-	const observableElements = getObservableElements()
-	const foundIndex = observableElements.findLastIndex((target) => target != null)
-	const target = observableElements[foundIndex]
-
-	// keep observing until the last target is rendered to the DOM
-	let callback = observe
-	if (foundIndex === observableElements.length - 1) {
-		// run immediately in case matching images are already present
-		addAllOverlays()
-		// then observe for new images
-		callback = addAllOverlays
+	// skip images inside external links (ads/affiliates, social icons, donate buttons, etc.)
+	const link = /** @type {HTMLAnchorElement} */ (img.closest('a[href]'))
+	if (link && new URL(link.href).hostname !== location.hostname) {
+		return false
 	}
 
-	observer?.disconnect()
-	observer = new MutationObserver(callback)
-	observer.observe(target, { subtree: true, childList: true })
+	// skip images with float styles to avoid messing with layout
+	const { width, height } = getComputedStyle(img)
+
+	// skip images that are too small to usefully render an overlay
+	if (parseFloat(width) * parseFloat(height) < config.minimumSize ** 2) return false
+
+	return true
 }
+
+/**
+ * Check if the alt text is "interesting" and should therefore have a copy button.
+ *
+ * Matches any non-Latin word-like character, on the assumption that any image with matching alt text is likely to be
+ * "interesting" for the purpose of copiable text, e.g. a language sample.
+ * @param {string} altText
+ */
+function isInteresting(altText) {
+	const wordLike = /[\p{L}\p{M}\p{N}]+/gu
+	const interesting = new RegExp(config.interesting, config.interesting.flags.replace('g', ''))
+	let match
+	while ((match = wordLike.exec(altText))) {
+		if (interesting.test(match[0])) return true
+	}
+	return false
+}
+
+/** @typedef {typeof _testExports} TestExports */
+/** Must be defined for testing purposes */
+// eslint-disable-next-line no-unused-vars
+const _testExports = { config, isCandidate, isInteresting }

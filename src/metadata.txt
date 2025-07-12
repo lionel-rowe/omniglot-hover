@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         Alt text to title
+// @name         Omniglot Image Hover
 // @namespace    https://github.com/lionel-rowe/
 // @version      0.1
-// @description  Alt text to title
+// @description  Show overlay with selectable and copiable title text on when hovering over images on Omniglot
 // @author       https://github.com/lionel-rowe/
-// @match        https://www.omniglot.com/*
+// @match        https://*.omniglot.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=omniglot.com
-// @updateURL    https://github.com/lionel-rowe/omniglot-hover/raw/refs/heads/main/dist/omniglot-hover.user.js
-// @downloadURL  https://github.com/lionel-rowe/omniglot-hover/raw/refs/heads/main/dist/omniglot-hover.user.js
+// @updateURL    https://raw.githubusercontent.com/lionel-rowe/omniglot-hover/refs/heads/main/dist/omniglot-hover.user.js
+// @downloadURL  https://raw.githubusercontent.com/lionel-rowe/omniglot-hover/refs/heads/main/dist/omniglot-hover.user.js
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
