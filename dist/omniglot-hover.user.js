@@ -38,21 +38,25 @@ const seen = new WeakSet()
 if (typeof globalThis.document === 'object') start()
 
 function start() {
-	const observer = new MutationObserver(queueAllOverlays)
+	const observer = new MutationObserver(addParentListener)
 	observer.observe(document.documentElement, { subtree: true, childList: true })
-	queueAllOverlays([], observer)
+	addParentListener([], observer)
 }
 
 /** @type {MutationCallback} */
-function queueAllOverlays(_, observer) {
-	if (document.readyState !== 'loading') observer.disconnect()
+function addParentListener(_, observer) {
+	const parent = document.querySelector(config.parent)
+	if (parent == null) return
 
-	const imgs = /** @type {Iterable<HTMLImageElement>} */ (document.querySelectorAll(`${config.parent} img[alt]`))
-	for (const img of imgs) {
-		if (seen.has(img)) continue
-		seen.add(img)
-		queueOverlay(img)
-	}
+	observer.disconnect()
+
+	parent.addEventListener('mouseover', (e) => {
+		if (e.target instanceof HTMLImageElement && e.target.alt) {
+			if (seen.has(e.target)) return
+			seen.add(e.target)
+			queueOverlay(e.target)
+		}
+	})
 }
 
 /**
@@ -71,11 +75,18 @@ function queueOverlay(img) {
 function addOverlay() {
 	if (!isCandidate(this)) return
 
-	const { alt } = this
-
 	const wrapper = document.createElement('span')
+	const { alt } = this
+	const styles = getComputedStyle(this)
+
 	const className = 'omniglot-hover'
 	wrapper.className = className
+	// re-apply `float` style to avoid messing with layout
+	wrapper.style.float = styles.float
+	for (const dir of /** @type {const} */ (['Top', 'Bottom', 'Left', 'Right'])) {
+		wrapper.style.setProperty(`--margin${dir}`, styles[`margin${dir}`])
+	}
+
 	this.replaceWith(wrapper)
 
 	const overlay = document.createElement('div')
@@ -100,11 +111,6 @@ function addOverlay() {
 
 	overlay.append(text)
 	wrapper.append(this, overlay)
-
-	// re-apply `float` style to avoid messing with layout
-	const { float } = getComputedStyle(this)
-	console.log(float)
-	if (float !== 'none') wrapper.style.float = float
 }
 
 /**
@@ -156,4 +162,4 @@ const _testExports = { config, isCandidate, isInteresting }
 const style = document.createElement('style')
 void (document.head ?? document.documentElement).append(style)
 style.textContent =
-	'.omniglot-hover {\n\tposition: relative;\n\tdisplay: inline-block;\n\tline-height: 0;\n\toverflow: hidden;\n}\n\n.omniglot-hover * {\n\tbox-sizing: border-box;\n}\n\n.omniglot-hover__overlay {\n\tdisplay: flex;\n\tflex-direction: column-reverse;\n\tposition: absolute;\n\tbottom: 0;\n\tleft: 0;\n\tright: 0;\n\tmax-height: 100%;\n\toverflow-y: auto;\n\twhite-space: pre-wrap;\n\ttransition: opacity 0.3s ease-in-out;\n\tpadding: 0.5rem;\n\tfont-size: 0.8rem;\n\tbackground-color: #000c;\n\tcolor: white;\n\tline-height: 1.5;\n}\n\n.omniglot-hover:not(:hover) .omniglot-hover__overlay {\n\tvisibility: hidden;\n\topacity: 0;\n}\n\n.omniglot-hover__overlay::-webkit-scrollbar {\n\twidth: 8px;\n}\n\n.omniglot-hover__overlay::-webkit-scrollbar-thumb {\n\tbackground: #fff8;\n\tborder-radius: 4px;\n}\n\n.omniglot-hover__text {\n\tdisplay: block;\n\twidth: 100%;\n}\n\n.omniglot-hover__copy-button {\n\tfloat: right;\n\tcursor: pointer;\n\tborder: none;\n\tfont-weight: bold;\n\tbackground: #ccc;\n\tcolor: black;\n\tborder-radius: 3px;\n\tpadding: 0.2rem;\n\ttransition: background 0.3s ease-in-out;\n\tmargin-left: 0.5rem;\n}\n\n.omniglot-hover__copy-button:hover {\n\tbackground: #fff;\n}'
+	'.omniglot-hover {\n\tposition: relative;\n\tdisplay: inline-block;\n\tline-height: 0;\n\toverflow: hidden;\n}\n\n.omniglot-hover * {\n\tbox-sizing: border-box;\n}\n\n.omniglot-hover__overlay {\n\tdisplay: flex;\n\tflex-direction: column-reverse;\n\tposition: absolute;\n\tbottom: 0;\n\tleft: 0;\n\tright: 0;\n\tmargin-top: var(--marginTop, 0px);\n\tmargin-bottom: var(--marginBottom, 0px);\n\tmargin-left: var(--marginLeft, 0px);\n\tmargin-right: var(--marginRight, 0px);\n\tmax-height: calc(100% - var(--marginTop, 0px) - var(--marginBottom, 0px));\n\toverflow-y: auto;\n\twhite-space: pre-wrap;\n\ttransition: opacity 0.3s ease-in-out;\n\tpadding: 0.5rem;\n\tfont-size: 0.8rem;\n\tbackground-color: #000c;\n\tcolor: white;\n\tline-height: 1.5;\n}\n\n.omniglot-hover:not(:hover) .omniglot-hover__overlay {\n\tvisibility: hidden;\n\topacity: 0;\n}\n\n.omniglot-hover__text {\n\tdisplay: block;\n\twidth: 100%;\n}\n\n.omniglot-hover__copy-button {\n\tfloat: right;\n\tcursor: pointer;\n\tborder: none;\n\tfont-weight: bold;\n\tbackground: #ccc;\n\tcolor: black;\n\tborder-radius: 3px;\n\tpadding: 0.2rem;\n\ttransition: background 0.3s ease-in-out;\n\tmargin-left: 0.5rem;\n}\n\n.omniglot-hover__copy-button:hover {\n\tbackground: #fff;\n}'

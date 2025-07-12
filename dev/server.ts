@@ -1,8 +1,15 @@
 import { serveDir, serveFile } from '@std/http/file-server'
 import { build } from './build.ts'
-import { delay } from '@std/async'
+import { debounce, delay } from '@std/async'
 
 await build()
+
+void (async () => {
+	const cb = debounce(build, 200)
+	for await (const event of Deno.watchFs('./src')) {
+		if (event.kind === 'modify') cb()
+	}
+})()
 
 Deno.serve(async (req) => {
 	const url = new URL(req.url)
@@ -19,10 +26,9 @@ Deno.serve(async (req) => {
 
 			for await (const event of watcher) {
 				if (event.kind === 'modify') {
-					delay(1000).then(async () => {
+					delay(1000).then(() => {
 						try {
 							watcher.close()
-							await build()
 						} catch { /* ignore if already closed */ }
 					})
 				}
@@ -31,10 +37,11 @@ Deno.serve(async (req) => {
 			return new Response(null)
 		}
 		default: {
-			if (pathname.startsWith('/img/')) {
-				return serveDir(req, { fsRoot: 'img', urlRoot: 'img' })
+			const subPath = pathname.split('/', 2)[1]
+			if (['src', 'img'].includes(subPath)) {
+				return serveDir(req, { fsRoot: subPath, urlRoot: subPath })
 			}
-			return serveDir(req, { fsRoot: 'src' })
+			return new Response('Not Found', { status: 404 })
 		}
 	}
 })

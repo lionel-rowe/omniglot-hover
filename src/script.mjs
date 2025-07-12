@@ -22,21 +22,25 @@ const seen = new WeakSet()
 if (typeof globalThis.document === 'object') start()
 
 function start() {
-	const observer = new MutationObserver(queueAllOverlays)
+	const observer = new MutationObserver(addParentListener)
 	observer.observe(document.documentElement, { subtree: true, childList: true })
-	queueAllOverlays([], observer)
+	addParentListener([], observer)
 }
 
 /** @type {MutationCallback} */
-function queueAllOverlays(_, observer) {
-	if (document.readyState !== 'loading') observer.disconnect()
+function addParentListener(_, observer) {
+	const parent = document.querySelector(config.parent)
+	if (parent == null) return
 
-	const imgs = /** @type {Iterable<HTMLImageElement>} */ (document.querySelectorAll(`${config.parent} img[alt]`))
-	for (const img of imgs) {
-		if (seen.has(img)) continue
-		seen.add(img)
-		queueOverlay(img)
-	}
+	observer.disconnect()
+
+	parent.addEventListener('mouseover', (e) => {
+		if (e.target instanceof HTMLImageElement && e.target.alt) {
+			if (seen.has(e.target)) return
+			seen.add(e.target)
+			queueOverlay(e.target)
+		}
+	})
 }
 
 /**
@@ -55,11 +59,18 @@ function queueOverlay(img) {
 function addOverlay() {
 	if (!isCandidate(this)) return
 
-	const { alt } = this
-
 	const wrapper = document.createElement('span')
+	const { alt } = this
+	const styles = getComputedStyle(this)
+
 	const className = 'omniglot-hover'
 	wrapper.className = className
+	// re-apply `float` style to avoid messing with layout
+	wrapper.style.float = styles.float
+	for (const dir of /** @type {const} */ (['Top', 'Bottom', 'Left', 'Right'])) {
+		wrapper.style.setProperty(`--margin${dir}`, styles[`margin${dir}`])
+	}
+
 	this.replaceWith(wrapper)
 
 	const overlay = document.createElement('div')
@@ -84,11 +95,6 @@ function addOverlay() {
 
 	overlay.append(text)
 	wrapper.append(this, overlay)
-
-	// re-apply `float` style to avoid messing with layout
-	const { float } = getComputedStyle(this)
-	console.log(float)
-	if (float !== 'none') wrapper.style.float = float
 }
 
 /**
