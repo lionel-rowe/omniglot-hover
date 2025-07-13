@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Omniglot Image Hover
 // @namespace    https://github.com/lionel-rowe/
-// @version      0.1
+// @version      1.0
 // @description  Show overlay with selectable and copiable title text on when hovering over images on Omniglot
 // @author       https://github.com/lionel-rowe/
 // @match        https://*.omniglot.com/*
