@@ -50,13 +50,18 @@ function addParentListener(_, observer) {
 
 	observer.disconnect()
 
-	parent.addEventListener('mouseover', (e) => {
-		if (e.target instanceof HTMLImageElement && e.target.alt) {
-			if (seen.has(e.target)) return
-			seen.add(e.target)
-			queueOverlay(e.target)
-		}
-	})
+	parent.addEventListener('mouseover', listener)
+	// in case mouse is already currently over an image
+	parent.addEventListener('mousemove', listener, { once: true })
+}
+
+/** @param {Event} e */
+function listener(e) {
+	if (e.target instanceof HTMLImageElement && e.target.alt) {
+		if (seen.has(e.target)) return
+		seen.add(e.target)
+		queueOverlay(e.target)
+	}
 }
 
 /**
@@ -157,7 +162,7 @@ function isInteresting(altText) {
 /** @typedef {typeof _testExports} TestExports */
 /** Must be defined for testing purposes */
 // eslint-disable-next-line no-unused-vars
-const _testExports = { config, isCandidate, isInteresting }
+const _testExports = { config, addOverlay, isCandidate, isInteresting }
 
 const style = document.createElement('style')
 void (document.head ?? document.documentElement).append(style)

@@ -1,25 +1,74 @@
 import { assertEquals } from '@std/assert'
-// @ts-types='@types/jsdom'
-import { JSDOM } from 'jsdom'
-import { stubProperty } from '@std/testing/unstable-stub-property'
+import { StubbedJsDom } from './testUtils.ts'
 
 // Normal export/import won't work as the script is not a module (can't currently use ESM in userscripts)
-const { isCandidate, isInteresting } = globalThis.eval(
+const { addOverlay, isCandidate, isInteresting } = globalThis.eval(
 	`(() => {
 		${await Deno.readTextFile(new URL('../src/script.mjs', import.meta.url))}
 		return _testExports
 	})()`,
 ) as import('../src/script.mjs').TestExports
 
-Deno.test(isCandidate.name, async (t) => {
-	const jsdom = new JSDOM(await Deno.readTextFile('./test/fixtures/page.html'), {
+Deno.test(addOverlay.name, async () => {
+	using _jsdom = new StubbedJsDom(await Deno.readTextFile('./test/fixtures/rendering.html'), {
 		url: 'https://www.omniglot.com/writing/burmese.htm',
 	})
 
-	using stack = new DisposableStack()
-	stack.use(stubProperty(globalThis, 'document', jsdom.window.document))
-	stack.use(stubProperty(globalThis, 'location', jsdom.window.location))
-	stack.use(stubProperty(globalThis, 'getComputedStyle', jsdom.window.getComputedStyle))
+	const expected: (string | null)[] = [
+		`<span class="omniglot-hover">
+			<img
+				alt="文字"
+				style="width: 500px; height: 200px"
+				src="https://www.omniglot.com/image.jpg"
+			>
+			<div class="omniglot-hover__overlay">
+				<div class="omniglot-hover__text">
+					文字
+					<button class="omniglot-hover__copy-button">Copy</button>
+				</div>
+			</div>
+		</span>`,
+
+		`<span
+			class="omniglot-hover"
+			style="float: left; --marginTop: 10px; --marginBottom: 10px; --marginLeft: 20px; --marginRight: 20px;"
+		>
+			<img
+				alt="Hello world"
+				style="width: 500px; height: 200px; margin: 10px 20px; float: left"
+				src="https://www.omniglot.com/image.jpg"
+			>
+			<div class="omniglot-hover__overlay">
+				<div class="omniglot-hover__text">
+					Hello world
+				</div>
+			</div>
+		</span>`,
+
+		null,
+	]
+
+	const imgs = document.querySelectorAll('img')
+
+	assertEquals(imgs.length, expected.length)
+
+	for (const [i, img] of imgs.entries()) {
+		addOverlay.call(img)
+
+		assertEquals(
+			img.closest('.omniglot-hover')?.outerHTML ?? null,
+			expected[i]
+				?.replaceAll(/\s*([<>])\s*/g, '$1')
+				.replaceAll(/\s+/g, ' ')
+				.trim() ?? null,
+		)
+	}
+})
+
+Deno.test(isCandidate.name, async (t) => {
+	using _jsdom = new StubbedJsDom(await Deno.readTextFile('./test/fixtures/candidates.html'), {
+		url: 'https://www.omniglot.com/writing/burmese.htm',
+	})
 
 	for (const img of document.querySelectorAll('img')) {
 		const { description, expect } = img.dataset

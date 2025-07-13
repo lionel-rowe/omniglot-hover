@@ -10,7 +10,7 @@
 		"@std/async": "jsr:@std/async@^1.0.13",
 		"@std/http": "jsr:@std/http@^1.0.19",
 		"@std/path": "jsr:@std/path@^1.1.1",
-		"@std/testing/unstable-stub-property": "https://raw.githubusercontent.com/lionel-rowe/std/41ed303dbe/testing/unstable_stub_property.ts",
+		"@std/testing/unstable-stub-property": "https://raw.githubusercontent.com/lionel-rowe/std/26004a91f9/testing/unstable_stub_property.ts",
 		"@types/jsdom": "npm:@types/jsdom@^21.1.7",
 		"jsdom": "npm:jsdom@^26.1.0",
 		"string-dedent": "npm:string-dedent@^3.0.2"
