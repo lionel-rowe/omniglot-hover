@@ -9,6 +9,8 @@ const config = /** @type {const} */ ({
 	minimumSize: 150,
 	/** Regular expression to match "interesting" word-like characters in alt text for purpose of adding copy button */
 	interesting: /[^\d\p{scx=Latn}]/u,
+	/** CSS class name to use for the overlay container. If changed, the CSS also needs to be changed correspondingly */
+	className: 'omniglot-hover',
 })
 
 /**
@@ -68,8 +70,7 @@ function addOverlay() {
 	const { alt } = this
 	const styles = getComputedStyle(this)
 
-	const className = 'omniglot-hover'
-	wrapper.className = className
+	wrapper.className = config.className
 	// re-apply `float` style to avoid messing with layout
 	wrapper.style.float = styles.float
 	for (const dir of /** @type {const} */ (['Top', 'Bottom', 'Left', 'Right'])) {
@@ -79,15 +80,15 @@ function addOverlay() {
 	this.replaceWith(wrapper)
 
 	const overlay = document.createElement('div')
-	overlay.className = `${className}__overlay`
+	overlay.className = `${config.className}__overlay`
 
 	const text = document.createElement('div')
-	text.className = `${className}__text`
+	text.className = `${config.className}__text`
 	text.textContent = alt
 
 	if (isInteresting(alt)) {
 		const copyButton = document.createElement('button')
-		copyButton.className = `${className}__copy-button`
+		copyButton.className = `${config.className}__copy-button`
 		copyButton.textContent = 'Copy'
 		copyButton.addEventListener('click', async () => {
 			await navigator.clipboard.writeText(alt)
@@ -108,6 +109,11 @@ function addOverlay() {
  */
 function isCandidate(img) {
 	if (!img.alt) return false
+	if (img.closest(`.${config.className}`) != null) {
+		// Already has an overlay (this is just a sanity check in case the script is loaded multiple times etc, since
+		// checking `seen` should already prevent this)
+		return false
+	}
 
 	// skip images inside external links (ads/affiliates, social icons, donate buttons, etc.)
 	const link = /** @type {HTMLAnchorElement} */ (img.closest('a[href]'))

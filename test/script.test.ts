@@ -2,7 +2,7 @@ import { assertEquals } from '@std/assert'
 import { StubbedJsDom } from './testUtils.ts'
 
 // Normal export/import won't work as the script is not a module (can't currently use ESM in userscripts)
-const { addOverlay, isCandidate, isInteresting } = globalThis.eval(
+const { config, addOverlay, isCandidate, isInteresting } = globalThis.eval(
 	`(() => {
 		${await Deno.readTextFile(new URL('../src/script.mjs', import.meta.url))}
 		return _testExports
@@ -53,15 +53,20 @@ Deno.test(addOverlay.name, async () => {
 	assertEquals(imgs.length, expected.length)
 
 	for (const [i, img] of imgs.entries()) {
-		addOverlay.call(img)
+		const selector = `.${config.className}`
+		const expectedHtml = expected[i]
+			?.replaceAll(/\s*([<>])\s*/g, '$1')
+			.replaceAll(/\s+/g, ' ')
+			.trim() ?? null
 
-		assertEquals(
-			img.closest('.omniglot-hover')?.outerHTML ?? null,
-			expected[i]
-				?.replaceAll(/\s*([<>])\s*/g, '$1')
-				.replaceAll(/\s+/g, ' ')
-				.trim() ?? null,
-		)
+		// run twice to test idempotency - second call should not change the result
+		for (let i = 0; i < 2; ++i) {
+			assertEquals(isCandidate(img), i === 0 && expectedHtml != null)
+			addOverlay.call(img)
+
+			assertEquals(img.closest(selector)?.parentElement?.closest(selector) ?? null, null)
+			assertEquals(img.closest(selector)?.outerHTML ?? null, expectedHtml)
+		}
 	}
 })
 
